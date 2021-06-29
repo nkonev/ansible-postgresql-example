@@ -1,0 +1,34 @@
+- name: Add Modern Postgres repo
+  ansible.builtin.yum:
+    name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    state: present
+- name: Install Postgres on Centos
+  ansible.builtin.yum:
+    name: postgresql13-server
+    state: present
+
+- name: daemon reload
+  shell: systemctl daemon-reload
+
+- name: Check if folder is empty before proceeding
+  find:
+    paths: '/var/lib/pgsql/13/data'
+  register: filesFound
+
+- name: init db
+  shell: su postgres -c "/usr/pgsql-13/bin/initdb -D /var/lib/pgsql/13/data -U postgres"
+  when: filesFound.matched == 0
+
+- name: Starting service
+  shell: systemctl start postgresql-13
+
+- name: echoing
+  ansible.builtin.debug:
+    msg: |
+      Congratulations! Use the following command to access to db:
+      /usr/pgsql-13/bin/psql -U postgres
+
+# Erasing
+# systemctl stop postgresql-13
+# yum erase postgresql13-libs-13.3-1PGDG.rhel7.x86_64 postgresql13-server-13.3-1PGDG.rhel7.x86_64 postgresql13-13.3-1PGDG.rhel7.x86_64
+# rm -rf /var/lib/pgsql/13/data/

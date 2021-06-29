@@ -1,0 +1,4 @@
+---
+- hosts: nkonev_name
+  roles:
+    - postgres
